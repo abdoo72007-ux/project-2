@@ -8,21 +8,24 @@ features = joblib.load('features.pkl')
 
 st.title("Mobile Price Range Prediction")
 
-
+# تقسيم الشاشة بعدد الـ features بالضبط
 columns = st.columns(len(features))
 
+# إنشاء dictionary لتخزين المدخلات لكل فِيتشر بشكل ديناميكي صحيح
+input_data = {}
 
-battery_power = columns[0].number_input("Battery Power", min_value=500, max_value=6000, value=1500)
-ram = columns[1].number_input("RAM", min_value=250, max_value=8000, value=2000)
-mobile_wt = columns[2].number_input("Mobile Weight", min_value=80, max_value=200, value=150)
+for i, feature in enumerate(features):
+    # لو العمود رقمي، بنعمله number_input
+    input_data[feature] = columns[i].number_input(f"{feature}", value=0.0)
 
-
-df = pd.DataFrame([[battery_power, ram, mobile_wt]], columns=features)
+# تحويل القاموس إلى DataFrame بالاعتماد على الـ features كأعمدة
+df = pd.DataFrame([input_data])
 
 if st.button("predict"):
-    
+    # تطبيق الـ encoder على الأعمدة النصية إن وجدت
     for name in encoder.keys():
-        df[name] = encoder[name].transform(df[name])
+        if name in df.columns:
+            df[name] = encoder[name].transform(df[name])
         
     prediction = model.predict(df)
     st.write("prediction: ", prediction[0])
